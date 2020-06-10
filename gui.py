@@ -1,6 +1,6 @@
 """
 Arcade program that uses the classes in universe.py
-Based off the One Line Coder's video on Procedurally Generated Universes
+Based off the One Lone Coder's video on Procedurally Generated Universes
 """
 
 # Imports
