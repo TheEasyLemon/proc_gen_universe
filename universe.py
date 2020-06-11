@@ -1,6 +1,7 @@
 from tkinter import *
 import math
-STAR_COLORS = ["F7D223", "35DAF7", "F79235", "F0DBDA", "364DE7"]
+STAR_COLORS = [(247, 210, 35), (53, 218, 247), (247, 146, 53),
+               (240, 219, 218), (54, 77, 231)]
 
 
 class Planet:
@@ -27,7 +28,7 @@ class Planet:
 
 
 class StarSystem:
-    def __init__(self, x, y, gen_full_system):
+    def __init__(self, x, y, gen_full_system=False):
         self.x = x
         self.y = y
         self.gen_full_system = gen_full_system
@@ -37,8 +38,8 @@ class StarSystem:
         self.seed = (self.x & 0xFFFF) << 16 | (self.y & 0xFFF)
 
         # not all locations have a star
-        starExists = (self.rnd_int(0, 20) == 1)
-        if not starExists:
+        self.star_exists = (self.rnd_int(0, 20) == 1)
+        if not self.star_exists:
             return
 
         # generate star
@@ -91,8 +92,8 @@ class StarSystem:
 
     def rnd(self):
         # Lehmer 64-bit generator
-        self.seed *= 0xda942042e4dd58b5
-        return self.seed >> 64
+        self.seed = self.seed * 48271 % 0x7fffffff
+        return self.seed
 
     def rnd_int(self, mi, ma):
         return (self.rnd() % (ma - mi)) + mi
