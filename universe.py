@@ -105,35 +105,3 @@ class StarSystem:
 
     def __repr__(self):
         return self.__str__()
-
-
-def main():
-    master = Tk()
-
-    w = Canvas(master, width=400, height=200)
-    w.pack()
-
-    cir = w.create_oval(100, 100, 25, 25, fill="blue")
-
-    def move_left(event):
-        w.move(cir, -10, 0)
-
-    def move_right(event):
-        w.move(cir, 10, 0)
-
-    def move_up(event):
-        w.move(cir, 0, -10)
-
-    def move_down(event):
-        w.move(cir, 0, 10)
-
-    master.bind('a', move_left)
-    master.bind('d', move_right)
-    master.bind('w', move_up)
-    master.bind('s', move_down)
-
-    mainloop()
-
-
-if __name__ == "__main__":
-    main()
