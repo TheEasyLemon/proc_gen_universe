@@ -49,7 +49,11 @@ class UniverseApp(arcade.Window):
         """Called whenever you draw your window"""
         # Clear the screen and start drawing
         arcade.start_render()
-        arcade.draw_circle_filled(300, 300, 5, arcade.color.WHITE)
+        self.circle = arcade.draw_circle_filled(300 + self.galaxy_offset["x"],
+                                                300 + self.galaxy_offset["y"],
+                                                5, arcade.color.WHITE)
+        self.player = arcade.draw_circle_outline(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2,
+                                                 5, arcade.color.YELLOW)
 
     def on_update(self, delta_time: float):
         """Handles the screen that pops up for selected stars"""
@@ -110,3 +114,4 @@ if __name__ == "__main__":
     window = UniverseApp(SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_TITLE)
     window.setup()
     arcade.run()
+    arcade.close_window()
