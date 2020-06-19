@@ -17,7 +17,8 @@ SECTORS_Y = int(SCREEN_HEIGHT / SECTOR_SIZE)
 SCREEN_TITLE = "Dawson's Universe"
 SCALING = 0.5
 MOVEMENT_SPEED = 7
-UNIVERSE_SIZE = 2
+UNIVERSE_SIZE = 1
+DECELERATION = 0.25
 
 
 class UniverseApp(arcade.Window):
@@ -48,6 +49,7 @@ class UniverseApp(arcade.Window):
 
         self.universe = Universe(SECTORS_X * UNIVERSE_SIZE, SECTORS_Y * UNIVERSE_SIZE, SECTOR_SIZE)
 
+        # create planet list and populate with random planets
         self.planet_list = arcade.ShapeElementList()
 
         for count_x, star_list in enumerate(self.universe.starsystems):
@@ -67,10 +69,6 @@ class UniverseApp(arcade.Window):
 
         self.planet_list.draw()
 
-        # "stationary" ball
-        arcade.draw_circle_filled(SCREEN_WIDTH / 2 + self.galaxy_offset["x"],
-                                  SCREEN_HEIGHT / 2 + self.galaxy_offset["y"], 20, arcade.color.WHITE)
-
         # yellow circle is the player, which "moves"
         self.player = arcade.draw_rectangle_filled(SCREEN_WIDTH / 2,
                                                    SCREEN_HEIGHT / 2, 10, 10, arcade.color.YELLOW_GREEN)
@@ -80,8 +78,21 @@ class UniverseApp(arcade.Window):
         """Handles the screen that pops up for selected stars"""
 
         # Calculate speed based on keys pressed
-        self.galaxy_offset["dx"] = 0
-        self.galaxy_offset["dy"] = 0
+        if abs(self.galaxy_offset["dx"]) > DECELERATION:
+            if self.galaxy_offset["dx"] > 0:
+                self.galaxy_offset["dx"] -= DECELERATION
+            else:
+                self.galaxy_offset["dx"] += DECELERATION
+        else:
+            self.galaxy_offset["dx"] = 0
+
+        if abs(self.galaxy_offset["dy"]) > DECELERATION:
+            if self.galaxy_offset["dy"] > 0:
+                self.galaxy_offset["dy"] -= DECELERATION
+            else:
+                self.galaxy_offset["dy"] += DECELERATION
+        else:
+            self.galaxy_offset["dy"] = 0
 
         # Notice movement is opposite of typical
         # We are moving the background, not the player
