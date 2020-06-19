@@ -5,18 +5,19 @@ Based off the One Lone Coder's video on Procedurally Generated Universes
 
 # Imports
 import arcade
-from universe import StarSystem, Planet
+from universe import Universe
 
 # Constants
-# Screen Height and Width need to be divisible by 20, because
-# we use 20 sectors
+# Screen Height and Width need to be divisible by SECTOR_DIV
 SCREEN_WIDTH = 800
-SCREEN_HEIGHT = 600
-SECTORS_X = int(SCREEN_WIDTH / 10)
-SECTORS_Y = int(SCREEN_HEIGHT / 10)
+SCREEN_HEIGHT = 800
+SECTOR_SIZE = 50
+SECTORS_X = int(SCREEN_WIDTH / SECTOR_SIZE)
+SECTORS_Y = int(SCREEN_HEIGHT / SECTOR_SIZE)
 SCREEN_TITLE = "Dawson's Universe"
 SCALING = 0.5
-MOVEMENT_SPEED = 2
+MOVEMENT_SPEED = 7
+UNIVERSE_SIZE = 2
 
 
 class UniverseApp(arcade.Window):
@@ -45,18 +46,39 @@ class UniverseApp(arcade.Window):
         self.selectedStarSeed1 = 0
         self.selectedStarSeed2 = 0
 
+        self.universe = Universe(SECTORS_X * UNIVERSE_SIZE, SECTORS_Y * UNIVERSE_SIZE, SECTOR_SIZE)
+
+        self.planet_list = arcade.ShapeElementList()
+
+        for count_x, star_list in enumerate(self.universe.starsystems):
+            for count_y, star in enumerate(star_list):
+                if star.star_exists:
+                    x_pos = SCREEN_WIDTH / 2 - SECTOR_SIZE * (0.5 * SECTORS_X - count_x)
+                    y_pos = SCREEN_HEIGHT / 2 - SECTOR_SIZE * (0.5 * SECTORS_Y - count_y)
+                    shape = arcade.create_ellipse_filled_with_colors(x_pos, y_pos, star.star_diameter,
+                                                                     star.star_diameter, star.star_color,
+                                                                     star.star_color)
+                    self.planet_list.append(shape)
+
     def on_draw(self):
-        """Called whenever you draw your window"""
+        """Called whenever you draw your window, about every 0.8 ms"""
         # Clear the screen and start drawing
         arcade.start_render()
-        self.circle = arcade.draw_circle_filled(300 + self.galaxy_offset["x"],
-                                                300 + self.galaxy_offset["y"],
-                                                5, arcade.color.WHITE)
-        self.player = arcade.draw_circle_outline(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2,
-                                                 5, arcade.color.YELLOW)
+
+        self.planet_list.draw()
+
+        # "stationary" ball
+        arcade.draw_circle_filled(SCREEN_WIDTH / 2 + self.galaxy_offset["x"],
+                                  SCREEN_HEIGHT / 2 + self.galaxy_offset["y"], 20, arcade.color.WHITE)
+
+        # yellow circle is the player, which "moves"
+        self.player = arcade.draw_rectangle_filled(SCREEN_WIDTH / 2,
+                                                   SCREEN_HEIGHT / 2, 10, 10, arcade.color.YELLOW_GREEN)
+        arcade.finish_render()
 
     def on_update(self, delta_time: float):
         """Handles the screen that pops up for selected stars"""
+
         # Calculate speed based on keys pressed
         self.galaxy_offset["dx"] = 0
         self.galaxy_offset["dy"] = 0
@@ -74,6 +96,9 @@ class UniverseApp(arcade.Window):
 
         self.galaxy_offset["x"] += self.galaxy_offset["dx"]
         self.galaxy_offset["y"] += self.galaxy_offset["dy"]
+        
+        self.planet_list.center_x = self.galaxy_offset["x"]
+        self.planet_list.center_y = self.galaxy_offset["y"]
 
     def on_key_press(self, symbol: int, modifiers: int):
         """Handles keypress events, WASD to move, Q to quit"""
@@ -90,8 +115,7 @@ class UniverseApp(arcade.Window):
             self.right_pressed = True
 
     def on_key_release(self, symbol: int, modifiers: int):
-        """Resets speed to 0"""
-
+        # Resets speed to 0
         if symbol == 119:  # "w"
             self.up_pressed = False
         elif symbol == 97:  # "a"

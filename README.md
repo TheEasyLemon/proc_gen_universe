@@ -10,5 +10,4 @@ but I'm more comfortable with Python.
     * More numbers will be generated concerning the number of planets, the ecosystems of said planets, number of moons, etc.
 * Graphics
     * I'll be using Python Arcade (https://arcade.academy/index.html). I settled on this because pygame, tkinter, and graphics.py couldn't achieve smooth enough motion.
-    * I WANT COOL WHIP SMOOTH MOTION
-    * Haven't figured out this part yet!
+    * It is smooth
