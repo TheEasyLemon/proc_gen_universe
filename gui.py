@@ -43,14 +43,10 @@ class UniverseApp(arcade.Window):
 
         # storing whether a star is being hovered over or not
         self.starHovered = False
-        self.hovered_x = 0
-        self.hovered_y = 0
-        self.hovered_diameter = 0
+        self.hovered_star = None
+
         # boolean to know when to show star window
-        self.starSelected = False
-        # holders to generate star seed
-        self.selectedStarSeed1 = 0
-        self.selectedStarSeed2 = 0
+        self.selected_star = None
 
         self.universe = Universe(SECTORS_X * UNIVERSE_SIZE, SECTORS_Y * UNIVERSE_SIZE, SECTOR_SIZE)
 
@@ -67,17 +63,23 @@ class UniverseApp(arcade.Window):
                                                                      star.star_color)
                     self.star_list.append(shape)
 
+        # TODO: Create boundary using dotted lines and append to self.star_list
+
+        # TODO: Create newly generated sectors somehow, Minecraft style
+
     def on_draw(self):
         """Called whenever you draw your window, about every 0.8 ms"""
         # Clear the screen and start drawing
         arcade.start_render()
 
+        # draw stars
         self.star_list.draw()
 
+        # draw selection circle
         if self.starHovered:
-            arcade.draw_circle_outline(self.hovered_x + self.galaxy_offset["x"],
-                                       self.hovered_y + self.galaxy_offset["y"],
-                                       self.hovered_diameter + 10, arcade.color.YELLOW)
+            arcade.draw_circle_outline(self.hovered_star.x + self.galaxy_offset["x"],
+                                       self.hovered_star.y + self.galaxy_offset["y"],
+                                       self.hovered_star.star_diameter + 10, arcade.color.YELLOW)
 
         # green square is the player, which "moves"
         self.player = arcade.draw_rectangle_filled(SCREEN_WIDTH / 2,
@@ -103,6 +105,7 @@ class UniverseApp(arcade.Window):
         else:
             self.galaxy_offset["dy"] = 0
 
+        # Calculate dy and dx
         # Notice - movement is opposite of typical
         # We are moving the background, not the player
         if self.up_pressed and not self.down_pressed:
@@ -114,7 +117,7 @@ class UniverseApp(arcade.Window):
         elif self.right_pressed and not self.left_pressed:
             self.galaxy_offset["dx"] = -MOVEMENT_SPEED
 
-        # Adjust galaxy_offset
+        # Adjust galaxy_offset based on dy and dx
         self.galaxy_offset["x"] += self.galaxy_offset["dx"]
         self.galaxy_offset["y"] += self.galaxy_offset["dy"]
 
@@ -148,7 +151,9 @@ class UniverseApp(arcade.Window):
             self.right_pressed = False
 
     def on_mouse_motion(self, x: float, y: float, dx: float, dy: float):
-        """Called when the user moves the mouse"""
+        """Called when the user moves the mouse, handles the appearance of a selection circle
+        when you hover over a star
+        """
         # boolean to keep track of if a star system is found at the mouse's position
         star_found = False
 
@@ -166,18 +171,19 @@ class UniverseApp(arcade.Window):
                         star_found = True
 
                         self.starHovered = True
-                        # we record the star's x and y and not the true x and y
-                        # so we can update it based on the changing galaxy offset
-                        self.hovered_x = star.x
-                        self.hovered_y = star.y
-                        self.hovered_diameter = star.star_diameter
+                        self.hovered_star = star
 
         if not star_found:
             self.starHovered = False
 
     def on_mouse_press(self, x: float, y: float, button: int, modifiers: int):
         """Called when the mouse is pressed"""
-        pass
+        if self.starHovered:
+            # generate the system, system remained ungenerated for memory efficiency
+            self.hovered_star.generate_system()
+            # copy the state of the newly generated star system
+            self.selected_star = self.hovered_star
+
 
 
 if __name__ == "__main__":

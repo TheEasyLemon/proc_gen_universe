@@ -1,7 +1,5 @@
 import math
 import random
-STAR_COLORS = [(247, 210, 35), (53, 218, 247), (247, 146, 53),
-               (240, 219, 218), (54, 77, 231)]
 
 
 class Planet:
@@ -34,7 +32,7 @@ class StarSystem:
         self.gen_full_system = gen_full_system
         self.planets = []
 
-        # set random seed based on location and noise
+        # set random seed based on location and random noise
         self.seed = ((self.x + random.randint(0, 1000)) & 0xFFFF) << 16 | ((self.y + random.randint(0, 1000)) & 0xFFFF)
 
         # not all locations have a star
@@ -44,12 +42,15 @@ class StarSystem:
 
         # generate star
         self.star_diameter = self.rnd_int(10, 40)
-        self.star_color = STAR_COLORS[self.rnd_int(0, 4)]
+        self.star_color = (self.rnd_int(0, 255), self.rnd_int(0, 255), self.rnd_int(0, 255))
 
         # when looking at the galaxy map, we don't need full system
         if not self.gen_full_system:
             return
 
+        self.generate_system()
+
+    def generate_system(self):
         # generate planets
         distance_from_star = self.rnd_double(60, 200)
         num_planets = self.rnd_int(0, 10)
@@ -60,14 +61,14 @@ class StarSystem:
             distance_from_star += self.rnd_int(20, 200)
             p.diameter = self.rnd_int(4, 20)
             # temperature decreases as distance increases
-            p.temperature = 1000 - p.distance * 3
+            p.temperature = 10000 / p.distance ** 2
             # foliage is normally distributed, centered on 20 degrees C
-            p.foliage = (math.e ** (-0.02 * (p.temperature - 20) ** 2))
+            p.foliage = (math.e ** (-0.01 * (p.temperature - 20) ** 2))
             # bigger diameter means more minerals due to the square-cube law
             p.minerals = (p.diameter ** 2) / 400
-            # more foliage means more gases and water
-            p.gases = p.foliage
-            p.water = p.foliage
+            # I have no idea...
+            p.gases = abs(2 * p.foliage - p.minerals)
+            p.water = abs(p.gases - p.minerals) * 3
 
             # normalize to 100%
             correction_factor = 1 / (p.foliage + p.minerals + p.gases + p.water)
@@ -99,13 +100,16 @@ class StarSystem:
         return (self.rnd() % (ma - mi)) + mi
 
     def rnd_double(self, mi, ma):
+        """DEPRECATED"""
         return (self.rnd() / 2147483647) * (ma - mi)
 
     def __str__(self):
-        return f"x: {self.x}\ny: {self.y}\ngen_full_system: {self.gen_full_system}\nseed: {self.seed}"
+        # iterate through vars
+        return "".join([f"{name}: {val}\n" for name, val in vars(self).items()])
 
     def __repr__(self):
         return self.__str__()
+
 
 class Universe:
     def __init__(self, sectors_x, sectors_y, sector_size):
@@ -118,7 +122,6 @@ class Universe:
             # appends by rows
             temp = []
             for j in range(sectors_y):
-                star = StarSystem(self.sector_size * i, self.sector_size * j,
-                                  gen_full_system=True)
+                star = StarSystem(self.sector_size * i, self.sector_size * j)
                 temp.append(star)
             self.starsystems.append(temp)
