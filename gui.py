@@ -8,18 +8,23 @@ import arcade
 from universe import Universe
 
 # Constants
-# Screen Height and Width need to be divisible by SECTOR_SIZE
 SCREEN_WIDTH = 800
 SCREEN_HEIGHT = 800
 SECTOR_SIZE = 50
-SECTORS_X = int(SCREEN_WIDTH / SECTOR_SIZE)
-SECTORS_Y = int(SCREEN_HEIGHT / SECTOR_SIZE)
+SECTORS_X = SCREEN_WIDTH / SECTOR_SIZE
+SECTORS_Y = SCREEN_HEIGHT / SECTOR_SIZE
 SCREEN_TITLE = "Dawson's Universe"
 SCALING = 0.5
 MOVEMENT_SPEED = 7
 UNIVERSE_SIZE = 10
 DECELERATION = 0.25
 
+# Check SECTORS_X and SECTORS_Y are equal, comparing float to int
+if int(SECTORS_X) != SECTORS_X or int(SECTORS_Y) != SECTORS_Y:
+    raise Exception("Adjust screen width, height, or sector size")
+else:
+    SECTORS_X = int(SECTORS_X)
+    SECTORS_Y = int(SECTORS_Y)
 
 class UniverseApp(arcade.Window):
     """User starts with a black screen with random stars around.
@@ -41,7 +46,7 @@ class UniverseApp(arcade.Window):
         # controls the place you're shown within the entire galaxy
         self.galaxy_offset = {"x": 0, "y": 0, "dx": 0, "dy": 0}
 
-        # storing whether a star is being hovered over or not
+        # starHovered - is a star being hovered over? hovered_star - the location of that star in memory
         self.starHovered = False
         self.hovered_star = None
 
@@ -84,6 +89,10 @@ class UniverseApp(arcade.Window):
         # green square is the player, which "moves"
         self.player = arcade.draw_rectangle_filled(SCREEN_WIDTH / 2,
                                                    SCREEN_HEIGHT / 2, 10, 10, arcade.color.YELLOW_GREEN)
+
+        # draw the selection menu
+        if self.selected_star is not None:
+            arcade.draw_rectangle_filled(400, 200, 750, 350, arcade.color.COOL_GREY)
 
     def on_update(self, delta_time: float):
         """Handles the screen that pops up for selected stars"""
@@ -183,6 +192,10 @@ class UniverseApp(arcade.Window):
             self.hovered_star.generate_system()
             # copy the state of the newly generated star system
             self.selected_star = self.hovered_star
+        else:
+            self.selected_star = None
+
+
 
 
 
