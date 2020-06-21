@@ -1,5 +1,6 @@
 import math
 import random
+from planet_name_generator import generate_name
 
 
 class Planet:
@@ -32,6 +33,8 @@ class StarSystem:
         self.gen_full_system = gen_full_system
         self.planets = []
 
+        self.name = generate_name()
+
         # set random seed based on location and random noise
         self.seed = ((self.x + random.randint(0, 1000)) & 0xFFFF) << 16 | ((self.y + random.randint(0, 1000)) & 0xFFFF)
 
@@ -51,6 +54,9 @@ class StarSystem:
         self.generate_system()
 
     def generate_system(self):
+        # set gen_full_system to True
+        self.gen_full_system = True
+
         # generate planets
         distance_from_star = self.rnd_double(60, 200)
         num_planets = self.rnd_int(0, 10)
@@ -104,11 +110,11 @@ class StarSystem:
         return (self.rnd() / 2147483647) * (ma - mi)
 
     def __str__(self):
-        # iterate through vars
-        return "".join([f"{name}: {val}\n" for name, val in vars(self).items()])
+        return f"Welcome to {self.name}!"
 
     def __repr__(self):
-        return self.__str__()
+        # iterate through vars
+        return "".join([f"{name}: {val}\n" for name, val in vars(self).items()])
 
 
 class Universe:

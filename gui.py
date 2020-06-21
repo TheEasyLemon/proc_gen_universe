@@ -26,6 +26,7 @@ else:
     SECTORS_X = int(SECTORS_X)
     SECTORS_Y = int(SECTORS_Y)
 
+
 class UniverseApp(arcade.Window):
     """User starts with a black screen with random stars around.
     Navigation with WASD, new stars procedurally generated around.
@@ -73,7 +74,7 @@ class UniverseApp(arcade.Window):
         # TODO: Create newly generated sectors somehow, Minecraft style
 
     def on_draw(self):
-        """Called whenever you draw your window, about every 0.8 ms"""
+        """Called whenever you draw your window, about every 10 ms"""
         # Clear the screen and start drawing
         arcade.start_render()
 
@@ -81,7 +82,7 @@ class UniverseApp(arcade.Window):
         self.star_list.draw()
 
         # draw selection circle
-        if self.starHovered:
+        if self.starHovered or self.selected_star is not None:
             arcade.draw_circle_outline(self.hovered_star.x + self.galaxy_offset["x"],
                                        self.hovered_star.y + self.galaxy_offset["y"],
                                        self.hovered_star.star_diameter + 10, arcade.color.YELLOW)
@@ -92,7 +93,11 @@ class UniverseApp(arcade.Window):
 
         # draw the selection menu
         if self.selected_star is not None:
-            arcade.draw_rectangle_filled(400, 200, 750, 350, arcade.color.COOL_GREY)
+            arcade.draw_rectangle_filled(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 4, SCREEN_WIDTH - 30,
+                                         (SCREEN_HEIGHT / 2) - 30, arcade.color.AIR_FORCE_BLUE)
+            arcade.draw_rectangle_filled(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 4, SCREEN_WIDTH - 50,
+                                         (SCREEN_HEIGHT / 2) - 50, arcade.color.EERIE_BLACK)
+            arcade.draw_text(str(self.selected_star), 30, 370, arcade.color.WHITE, 12, anchor_x="left", anchor_y="top")
 
     def on_update(self, delta_time: float):
         """Handles the screen that pops up for selected stars"""
@@ -194,9 +199,6 @@ class UniverseApp(arcade.Window):
             self.selected_star = self.hovered_star
         else:
             self.selected_star = None
-
-
-
 
 
 if __name__ == "__main__":
