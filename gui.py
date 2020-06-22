@@ -16,7 +16,7 @@ SECTORS_Y = SCREEN_HEIGHT / SECTOR_SIZE
 SCREEN_TITLE = "Dawson's Universe"
 SCALING = 0.5
 MOVEMENT_SPEED = 7
-UNIVERSE_SIZE = 10
+UNIVERSE_SIZE = 1
 DECELERATION = 0.25
 
 # Check SECTORS_X and SECTORS_Y are equal, comparing float to int
@@ -80,7 +80,21 @@ class UniverseApp(arcade.Window):
                                                (SCREEN_HEIGHT / 2) - 50, arcade.color.EERIE_BLACK)
         self.star_menu.append(inner)
 
-        # TODO: Create boundary using dotted lines and append to self.star_list
+        self.boundary_lines = arcade.ShapeElementList()
+        # bottom line
+        line = arcade.create_line(0, 0, UNIVERSE_SIZE * SCREEN_WIDTH, 0, arcade.color.WHITE, line_width=5)
+        self.boundary_lines.append(line)
+        # left line
+        line = arcade.create_line(0, 0, 0, UNIVERSE_SIZE * SCREEN_HEIGHT, arcade.color.WHITE, line_width=5)
+        self.boundary_lines.append(line)
+        # top line
+        line = arcade.create_line(0, UNIVERSE_SIZE * SCREEN_HEIGHT, UNIVERSE_SIZE * SCREEN_WIDTH,
+                                  UNIVERSE_SIZE * SCREEN_HEIGHT, arcade.color.WHITE, line_width=5)
+        self.boundary_lines.append(line)
+        # right line
+        line = arcade.create_line(UNIVERSE_SIZE * SCREEN_WIDTH, UNIVERSE_SIZE * SCREEN_HEIGHT,
+                                  UNIVERSE_SIZE * SCREEN_WIDTH, 0, arcade.color.WHITE, line_width=5)
+        self.boundary_lines.append(line)
 
         # TODO: Create newly generated sectors somehow, Minecraft style
 
@@ -91,6 +105,9 @@ class UniverseApp(arcade.Window):
 
         # draw stars
         self.star_list.draw()
+
+        # draw boundary lines
+        self.boundary_lines.draw()
 
         # draw selection circle
         if self.starHovered or self.selected_star is not None:
@@ -146,6 +163,10 @@ class UniverseApp(arcade.Window):
         # Adjust stars relative to galaxy_offset
         self.star_list.center_x = self.galaxy_offset["x"]
         self.star_list.center_y = self.galaxy_offset["y"]
+
+        # Adjust boundary lines relative to galaxy_offset
+        self.boundary_lines.center_x = self.galaxy_offset["x"]
+        self.boundary_lines.center_y = self.galaxy_offset["y"]
 
     def on_key_press(self, symbol: int, modifiers: int):
         """Handles keypress events, WASD to move, Q to quit"""
