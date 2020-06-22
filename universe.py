@@ -45,7 +45,7 @@ class StarSystem:
 
         # generate star
         self.star_diameter = self.rnd_int(10, 40)
-        self.star_color = (self.rnd_int(0, 255), self.rnd_int(0, 255), self.rnd_int(0, 255))
+        self.star_color = (self.rnd_int(40, 255), self.rnd_int(40, 255), self.rnd_int(40, 255))
 
         # when looking at the galaxy map, we don't need full system
         if not self.gen_full_system:

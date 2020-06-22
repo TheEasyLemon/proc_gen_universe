@@ -1,6 +1,6 @@
 """
 Arcade program that uses the classes in universe.py
-Based off the One Lone Coder's video on Procedurally Generated Universes
+Inspired by the One Lone Coder's video on Procedurally Generated Universes
 """
 
 # Imports
@@ -45,7 +45,9 @@ class UniverseApp(arcade.Window):
         arcade.set_background_color(arcade.color.BLACK)
 
         # controls the place you're shown within the entire galaxy
-        self.galaxy_offset = {"x": 0, "y": 0, "dx": 0, "dy": 0}
+        # starts in the middle of the galaxy, x and y should be negative
+        self.galaxy_offset = {"x": -(UNIVERSE_SIZE * SCREEN_WIDTH / 2), "y": -(UNIVERSE_SIZE * SCREEN_HEIGHT / 2),
+                              "dx": 0, "dy": 0}
 
         # starHovered - is a star being hovered over? hovered_star - the location of that star in memory
         self.starHovered = False
@@ -68,6 +70,15 @@ class UniverseApp(arcade.Window):
                                                                      star.star_diameter, star.star_color,
                                                                      star.star_color)
                     self.star_list.append(shape)
+
+        # menu that shows up when you click on a star
+        self.star_menu = arcade.ShapeElementList()
+        outer = arcade.create_rectangle_filled(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 4, SCREEN_WIDTH - 30,
+                                               (SCREEN_HEIGHT / 2) - 30, arcade.color.AIR_FORCE_BLUE)
+        self.star_menu.append(outer)
+        inner = arcade.create_rectangle_filled(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 4, SCREEN_WIDTH - 50,
+                                               (SCREEN_HEIGHT / 2) - 50, arcade.color.EERIE_BLACK)
+        self.star_menu.append(inner)
 
         # TODO: Create boundary using dotted lines and append to self.star_list
 
@@ -93,10 +104,7 @@ class UniverseApp(arcade.Window):
 
         # draw the selection menu
         if self.selected_star is not None:
-            arcade.draw_rectangle_filled(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 4, SCREEN_WIDTH - 30,
-                                         (SCREEN_HEIGHT / 2) - 30, arcade.color.AIR_FORCE_BLUE)
-            arcade.draw_rectangle_filled(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 4, SCREEN_WIDTH - 50,
-                                         (SCREEN_HEIGHT / 2) - 50, arcade.color.EERIE_BLACK)
+            self.star_menu.draw()
             arcade.draw_text(str(self.selected_star), 30, 370, arcade.color.WHITE, 12, anchor_x="left", anchor_y="top")
 
     def on_update(self, delta_time: float):
@@ -152,6 +160,8 @@ class UniverseApp(arcade.Window):
             self.down_pressed = True
         elif symbol == 100:  # "d"
             self.right_pressed = True
+        elif symbol == 103:  # "g"
+            print(self.galaxy_offset)
 
     def on_key_release(self, symbol: int, modifiers: int):
         # Resets speed to 0
