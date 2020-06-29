@@ -1,6 +1,7 @@
 import math
 import random
 from planet_name_generator import generate_name
+from constants import SCREEN_HEIGHT, SCREEN_WIDTH
 
 
 class Planet:
@@ -15,6 +16,7 @@ class Planet:
         self.population = 0
         self.ring = False
         self.moons = []
+        self.color = (0, 0, 0)
 
     def __str__(self):
         s = ""
@@ -58,13 +60,11 @@ class StarSystem:
         self.gen_full_system = True
 
         # generate planets
-        distance_from_star = self.rnd_double(60, 200)
-        num_planets = self.rnd_int(0, 10)
+        num_planets = self.rnd_int(0, 8)
 
         for i in range(num_planets):
             p = Planet()
-            p.distance = distance_from_star
-            distance_from_star += self.rnd_int(20, 200)
+            p.distance = self.rnd_int(50, SCREEN_WIDTH - 50)
             p.diameter = self.rnd_int(4, 20)
             # temperature decreases as distance increases
             p.temperature = 10000 / p.distance ** 2
@@ -84,11 +84,13 @@ class StarSystem:
             p.water *= correction_factor
 
             # population is random for now, negative lower bound so
-            # 80% of planets have no population
-            p.population = max(self.rnd_int(-20000000, 5000000), 0)
+            # 50% of planets have no population
+            p.population = max(self.rnd_int(-5000000, 5000000), 0)
 
             # 20% of planets have a ring
             p.ring = (self.rnd_int(0, 10) == 1)
+
+            p.color = (p.gases * 255, p.foliage * 255, p.water * 255)
 
             num_moons = max(self.rnd_int(-5, 5), 0)
             # a moon is just a diameter for now
@@ -110,7 +112,7 @@ class StarSystem:
         return (self.rnd() / 2147483647) * (ma - mi)
 
     def __str__(self):
-        return f"Welcome to {self.name}!"
+        return f"Welcome to {self.name}!\n"
 
     def __repr__(self):
         # iterate through vars

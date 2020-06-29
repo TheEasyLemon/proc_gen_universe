@@ -6,15 +6,13 @@ Inspired by the One Lone Coder's video on Procedurally Generated Universes
 # Imports
 import arcade
 from universe import Universe
+from constants import SCREEN_HEIGHT, SCREEN_WIDTH
 
 # Constants
-SCREEN_WIDTH = 800
-SCREEN_HEIGHT = 800
 SECTOR_SIZE = 50
 SECTORS_X = SCREEN_WIDTH / SECTOR_SIZE
 SECTORS_Y = SCREEN_HEIGHT / SECTOR_SIZE
 SCREEN_TITLE = "Dawson's Universe"
-SCALING = 0.5
 MOVEMENT_SPEED = 7
 UNIVERSE_SIZE = 1
 DECELERATION = 0.25
@@ -80,6 +78,7 @@ class UniverseApp(arcade.Window):
                                                (SCREEN_HEIGHT / 2) - 50, arcade.color.EERIE_BLACK)
         self.star_menu.append(inner)
 
+        # draw boundary lines
         self.boundary_lines = arcade.ShapeElementList()
         # bottom line
         line = arcade.create_line(0, 0, UNIVERSE_SIZE * SCREEN_WIDTH, 0, arcade.color.WHITE, line_width=5)
@@ -119,10 +118,13 @@ class UniverseApp(arcade.Window):
         self.player = arcade.draw_rectangle_filled(SCREEN_WIDTH / 2,
                                                    SCREEN_HEIGHT / 2, 10, 10, arcade.color.YELLOW_GREEN)
 
-        # draw the selection menu
+        # draw the selection menu and planets
         if self.selected_star is not None:
+            PADDING = 30
             self.star_menu.draw()
-            arcade.draw_text(str(self.selected_star), 30, 370, arcade.color.WHITE, 12, anchor_x="left", anchor_y="top")
+            arcade.draw_text(str(self.selected_star), PADDING, (SCREEN_WIDTH / 2) - 30, arcade.color.WHITE, 24,
+                             anchor_x="left", anchor_y="top")
+            self.planet_list.draw()
 
     def on_update(self, delta_time: float):
         """Handles the screen that pops up for selected stars"""
@@ -228,6 +230,13 @@ class UniverseApp(arcade.Window):
             self.hovered_star.generate_system()
             # copy the state of the newly generated star system
             self.selected_star = self.hovered_star
+
+            # create ShapeElementList of all of the planets surrounding the star
+            self.planet_list = arcade.ShapeElementList()
+            for i, p in enumerate(self.selected_star.planets):
+                planet = arcade.create_ellipse_filled(p.distance, SCREEN_HEIGHT / 4, p.diameter, p.diameter,
+                                                      p.color)
+                self.planet_list.append(planet)
         else:
             self.selected_star = None
 
