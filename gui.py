@@ -14,7 +14,7 @@ SECTORS_X = SCREEN_WIDTH / SECTOR_SIZE
 SECTORS_Y = SCREEN_HEIGHT / SECTOR_SIZE
 SCREEN_TITLE = "Dawson's Universe"
 MOVEMENT_SPEED = 7
-UNIVERSE_SIZE = 1
+UNIVERSE_SIZE = 10
 DECELERATION = 0.25
 
 # Check SECTORS_X and SECTORS_Y are equal, comparing float to int
@@ -25,14 +25,35 @@ else:
     SECTORS_Y = int(SECTORS_Y)
 
 
-class UniverseApp(arcade.Window):
+class StartView(arcade.View):
+    def __init__(self):
+        super().__init__()
+
+    def on_show(self):
+        arcade.set_background_color(arcade.color.COOL_GREY)
+        # load the game in the background when we show
+        self.game_view = UniverseGame()
+        self.game_view.setup()
+
+    def on_draw(self):
+        arcade.start_render()
+        arcade.draw_text("Dawson's Universe", SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2,
+                         arcade.color.WHITE, font_size=50, anchor_x="center")
+        arcade.draw_text("Click to advance", SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2 - 75,
+                         arcade.color.WHITE, font_size=20, anchor_x="center")
+
+    def on_mouse_press(self, x: float, y: float, button: int, modifiers: int):
+        self.window.show_view(self.game_view)
+
+
+class UniverseGame(arcade.View):
     """User starts with a black screen with random stars around.
     Navigation with WASD, new stars procedurally generated around.
     Returning to the same galaxy_offset yields the same procedurally
     generated stars."""
 
-    def __init__(self, width, height, title):
-        super().__init__(width, height, title)
+    def __init__(self):
+        super().__init__()
 
         self.left_pressed = False
         self.right_pressed = False
@@ -242,7 +263,9 @@ class UniverseApp(arcade.Window):
 
 
 if __name__ == "__main__":
-    window = UniverseApp(SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_TITLE)
-    window.setup()
+    window = arcade.Window(SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_TITLE)
+    view = StartView()
+    window.show_view(view)
     arcade.run()
     arcade.close_window()
+
