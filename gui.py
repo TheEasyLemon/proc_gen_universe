@@ -15,7 +15,7 @@ SECTORS_Y = SCREEN_HEIGHT / SECTOR_SIZE
 SCREEN_TITLE = "Dawson's Universe"
 MOVEMENT_SPEED = 1
 UNIVERSE_SIZE = 10
-DECELERATION = 0.1
+DECELERATION = 0.05
 
 # Check SECTORS_X and SECTORS_Y are equal, comparing float to int
 if int(SECTORS_X) != SECTORS_X or int(SECTORS_Y) != SECTORS_Y:
@@ -95,13 +95,6 @@ class UniverseGame(arcade.View):
         # Clear the screen and start drawing
         arcade.start_render()
 
-        # reset self.star_list and self.universe
-        self.star_list = arcade.ShapeElementList()
-        self.universe = []
-
-        # generate the data in self.star_list and self.universe
-        self.generate_star_list()
-
         # draw star_list
         self.star_list.draw()
 
@@ -109,6 +102,10 @@ class UniverseGame(arcade.View):
         self.draw_star_menu()
 
     def generate_star_list(self):
+        # reset self.star_list and self.universe
+        self.star_list = arcade.ShapeElementList()
+        self.universe = []
+
         # procedurally generate all the StarSystem objects on the screen and store as VBOs
         for x in range(0, SECTORS_X):
             # a row of sectors, will be appended to self.universe
@@ -141,7 +138,10 @@ class UniverseGame(arcade.View):
             self.planet_list.draw()
 
     def on_update(self, delta_time: float):
-        """Handles the screen that pops up for selected stars"""
+        """Handles the screen that pops up for selected stars
+        Also regenerates data for star_list when player moves"""
+        # generate the data in self.star_list and self.universe
+        self.generate_star_list()
 
         # Calculate deceleration
         if abs(self.galaxy_offset["dx"]) > DECELERATION:
@@ -176,6 +176,7 @@ class UniverseGame(arcade.View):
 
     def on_key_press(self, symbol: int, modifiers: int):
         """Handles keypress events, WASD to move, Q to quit"""
+
         if symbol == 113:  # "q" to quit
             exit(0)
 
@@ -189,7 +190,7 @@ class UniverseGame(arcade.View):
             self.right_pressed = True
         elif symbol == 103:  # "g"
             print(self.galaxy_offset)
-        elif symbol == 104: # "h"
+        elif symbol == 104:  # "h"
             print(self.starHovered)
 
     def on_key_release(self, symbol: int, modifiers: int):
@@ -211,9 +212,13 @@ class UniverseGame(arcade.View):
         self.starHovered = False
 
         # check whether the current sector that the mouse is in has a star
-        x_sector = x // SECTOR_SIZE
-        y_sector = y // SECTOR_SIZE
-        current_star = self.universe[x_sector][y_sector]
+        x_sector = int(x // SECTOR_SIZE)
+        y_sector = int(y // SECTOR_SIZE)
+        try:
+            current_star = self.universe[x_sector][y_sector]
+        except IndexError:
+            return
+
         if current_star.star_exists:
             self.starHovered = True
             self.hovered_star = current_star
@@ -245,4 +250,3 @@ if __name__ == "__main__":
     window.show_view(view)
     arcade.run()
     arcade.close_window()
-
