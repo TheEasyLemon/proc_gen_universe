@@ -1,5 +1,4 @@
 import math
-import random
 from planet_name_generator import generate_name
 from constants import SCREEN_HEIGHT, SCREEN_WIDTH
 
@@ -38,7 +37,7 @@ class StarSystem:
         self.name = generate_name()
 
         # set random seed based on location and random noise
-        self.seed = ((self.x + random.randint(0, 1000)) & 0xFFFF) << 16 | ((self.y + random.randint(0, 1000)) & 0xFFFF)
+        self.seed = (self.x & 0xFFFF) << 16 | (self.y & 0xFFFF)
 
         # not all locations have a star
         self.star_exists = (self.rnd_int(0, 20) == 1)
@@ -47,18 +46,13 @@ class StarSystem:
 
         # generate star
         self.star_diameter = self.rnd_int(10, 40)
-        self.star_color = (self.rnd_int(40, 255), self.rnd_int(40, 255), self.rnd_int(40, 255))
+        self.star_color = (self.rnd_int(100, 255), self.rnd_int(100, 255), self.rnd_int(100, 255))
 
         # when looking at the galaxy map, we don't need full system
-        if not self.gen_full_system:
-            return
-
-        self.generate_system()
+        if self.gen_full_system:
+            self.generate_system()
 
     def generate_system(self):
-        # set gen_full_system to True
-        self.gen_full_system = True
-
         # generate planets
         num_planets = self.rnd_int(0, 8)
 
@@ -100,16 +94,19 @@ class StarSystem:
             self.planets.append(p)
 
     def rnd(self):
-        # Lehmer 64-bit generator
-        self.seed = (self.seed * 48271) % 0x7fffffff
-        return self.seed
+        # Conventional Number Generator, source in README
+        self.seed += 0xe120fc15
+        tmp = self.seed * 0x4a39b70d
+        m1 = (tmp >> 32) ^ tmp
+        tmp = m1 * 0x12fad5c9
+        m2 = (tmp >> 32) ^ tmp
+        return m2
 
     def rnd_int(self, mi, ma):
         return (self.rnd() % (ma - mi)) + mi
 
     def rnd_double(self, mi, ma):
-        """DEPRECATED"""
-        return (self.rnd() / 2147483647) * (ma - mi)
+        return (self.rnd() / 0x7FFFFFFF) * (ma - mi) + mi
 
     def __str__(self):
         return f"Welcome to {self.name}!\n"
@@ -117,19 +114,3 @@ class StarSystem:
     def __repr__(self):
         # iterate through vars
         return "".join([f"{name}: {val}\n" for name, val in vars(self).items()])
-
-
-class Universe:
-    def __init__(self, sectors_x, sectors_y, sector_size):
-        self.sectors_x = sectors_x
-        self.sectors_y = sectors_y
-        self.sector_size = sector_size
-        self.starsystems = []
-
-        for i in range(sectors_x):
-            # appends by rows
-            temp = []
-            for j in range(sectors_y):
-                star = StarSystem(self.sector_size * i, self.sector_size * j)
-                temp.append(star)
-            self.starsystems.append(temp)
