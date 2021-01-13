@@ -5,6 +5,7 @@ Inspired by the One Lone Coder's video on Procedurally Generated Universes
 
 # Imports
 import arcade
+from copy import deepcopy
 from universe import StarSystem
 from constants import SCREEN_HEIGHT, SCREEN_WIDTH
 
@@ -33,7 +34,6 @@ class StartView(arcade.View):
         arcade.set_background_color(arcade.color.COOL_GREY)
         # load the game in the background when we show
         self.game_view = UniverseGame()
-        self.game_view.setup()
 
     def on_draw(self):
         arcade.start_render()
@@ -60,51 +60,31 @@ class UniverseGame(arcade.View):
         self.up_pressed = False
         self.down_pressed = False
 
-    def setup(self):
         arcade.set_background_color(arcade.color.BLACK)
 
         # controls the place you're shown within the entire galaxy
-        # starts in the middle of the galaxy, x and y should be negative
-        self.galaxy_offset = {"x": -(UNIVERSE_SIZE * SCREEN_WIDTH / 2), "y": -(UNIVERSE_SIZE * SCREEN_HEIGHT / 2),
-                              "dx": 0, "dy": 0}
+        # starts in the middle of the galaxy
+        self.galaxy_offset = {"x": -(UNIVERSE_SIZE * SCREEN_WIDTH / 2),
+                              "y": -(UNIVERSE_SIZE * SCREEN_HEIGHT / 2),
+                              "dx": 0,
+                              "dy": 0}
 
-        # starHovered - is a star being hovered over? hovered_star - the location of that star in memory
-        self.starHovered = False
+        # the star being hovered over
         self.hovered_star = None
 
-        # boolean to know when to show star window
+        # which star the user clicked on
         self.selected_star = None
 
-        # create list of stars' VBOs that are currently on the screen
+        # list of all visible stars' VBOs
         self.star_list = arcade.ShapeElementList()
-        # create list of StarSystem objects, including sectors where star_exists is False
-        # that exist on currently on the screen. It should be a two dimensional array.
+        # two dimensional array of StarSystem objects
         self.universe = []
 
-        # menu that shows up when you click on a star
-        self.star_menu = arcade.ShapeElementList()
-        outer = arcade.create_rectangle_filled(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 4, SCREEN_WIDTH - 30,
-                                               (SCREEN_HEIGHT / 2) - 30, arcade.color.AIR_FORCE_BLUE)
-        self.star_menu.append(outer)
-        inner = arcade.create_rectangle_filled(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 4, SCREEN_WIDTH - 50,
-                                               (SCREEN_HEIGHT / 2) - 50, arcade.color.EERIE_BLACK)
-        self.star_menu.append(inner)
-
-    def on_draw(self):
-        """Called whenever you draw your window, about every 10 ms"""
-        # Clear the screen and start drawing
-        arcade.start_render()
-
-        # draw star_list
-        self.star_list.draw()
-
-        self.draw_selection_circle()
-        self.draw_star_menu()
+        self.generate_star_list()
 
     def generate_star_list(self):
-        # reset self.star_list and self.universe
-        self.star_list = arcade.ShapeElementList()
-        self.universe = []
+        new_universe = []
+        new_star_list = arcade.ShapeElementList()
 
         # procedurally generate all the StarSystem objects on the screen and store as VBOs
         for x in range(0, SECTORS_X):
@@ -118,29 +98,71 @@ class UniverseGame(arcade.View):
                 row.append(s)
 
                 if s.star_exists:
-                    star = arcade.create_ellipse_filled(x * SECTOR_SIZE, y * SECTOR_SIZE, s.star_diameter,
-                                                        s.star_diameter, s.star_color)
-                    self.star_list.append(star)
+                    star = arcade.create_ellipse_filled(x * SECTOR_SIZE,
+                                                        y * SECTOR_SIZE,
+                                                        s.star_diameter,
+                                                        s.star_diameter,
+                                                        s.star_color)
+                    new_star_list.append(star)
 
-            self.universe.append(row)
+            new_universe.append(row)
 
-    def draw_selection_circle(self):
-        if self.starHovered or self.selected_star is not None:
-            arcade.draw_circle_outline(self.hovered_star.x, self.hovered_star.y, self.hovered_star.star_diameter + 10,
-                                       arcade.color.YELLOW)
+        self.universe = new_universe
+        self.star_list = new_star_list
 
-    def draw_star_menu(self):
+    def draw_selection_circle(self, star):
+        arcade.draw_circle_outline(star.x,
+                                   star.y,
+                                   star.star_diameter + 10,
+                                   arcade.color.YELLOW)
+
+    def draw_star_menu(self, star):
+        # menu that shows up when you click on a star
+        star_menu = arcade.ShapeElementList()
+        outer = arcade.create_rectangle_filled(SCREEN_WIDTH / 2,
+                                               SCREEN_HEIGHT / 4,
+                                               SCREEN_WIDTH - 30,
+                                               (SCREEN_HEIGHT / 2) - 30,
+                                               arcade.color.AIR_FORCE_BLUE)
+        star_menu.append(outer)
+        inner = arcade.create_rectangle_filled(SCREEN_WIDTH / 2,
+                                               SCREEN_HEIGHT / 4,
+                                               SCREEN_WIDTH - 50,
+                                               (SCREEN_HEIGHT / 2) - 50,
+                                               arcade.color.EERIE_BLACK)
+        star_menu.append(inner)
+        star_menu.draw()
+
+        arcade.draw_text(str(star),
+                         30,
+                         (SCREEN_WIDTH / 2) - 30,
+                         arcade.color.WHITE,
+                         24,
+                         anchor_x="left", anchor_y="top")
+
+        self.planet_list.draw()
+
+    def on_draw(self):
+        """Called whenever you draw your window, about every 10 ms"""
+        # Clear the screen and start drawing
+        arcade.start_render()
+
+        # draw star_list
+        self.star_list.draw()
+
+        if self.hovered_star is not None:
+            self.draw_selection_circle(self.hovered_star)
+
         if self.selected_star is not None:
-            PADDING = 30
-            self.star_menu.draw()
-            arcade.draw_text(str(self.selected_star), PADDING, (SCREEN_WIDTH / 2) - 30, arcade.color.WHITE, 24,
-                             anchor_x="left", anchor_y="top")
-            self.planet_list.draw()
+            self.draw_selection_circle(self.selected_star)
+
+        if self.selected_star is not None:
+            self.draw_star_menu(self.selected_star)
 
     def on_update(self, delta_time: float):
         """Handles the screen that pops up for selected stars
         Also regenerates data for star_list when player moves"""
-        # generate the data in self.star_list and self.universe
+        # regenerate the data in self.star_list and self.universe as you move
         self.generate_star_list()
 
         # Calculate deceleration
@@ -175,11 +197,7 @@ class UniverseGame(arcade.View):
         self.galaxy_offset["y"] += self.galaxy_offset["dy"]
 
     def on_key_press(self, symbol: int, modifiers: int):
-        """Handles keypress events, WASD to move, Q to quit"""
-
-        if symbol == 113:  # "q" to quit
-            exit(0)
-
+        """Handles keypress events, WASD to move"""
         if symbol == 119:  # "w"
             self.up_pressed = True
         elif symbol == 97:  # "a"
@@ -191,10 +209,9 @@ class UniverseGame(arcade.View):
         elif symbol == 103:  # "g"
             print(self.galaxy_offset)
         elif symbol == 104:  # "h"
-            print(self.starHovered)
+            print(self.hovered_star is not None)
 
     def on_key_release(self, symbol: int, modifiers: int):
-        # Resets speed to 0
         if symbol == 119:  # "w"
             self.up_pressed = False
         elif symbol == 97:  # "a"
@@ -205,39 +222,40 @@ class UniverseGame(arcade.View):
             self.right_pressed = False
 
     def on_mouse_motion(self, x: float, y: float, dx: float, dy: float):
-        """Called when the user moves the mouse, handles the appearance of a selection circle
-        when you hover over a sector that contains a star
+        """Called when the user moves the mouse, handles the appearance of
+        a selection circle when you hover over a sector that contains a star
         """
         # Assumed nothing is hovered until found
-        self.starHovered = False
+        self.hovered_star = None
 
-        # check whether the current sector that the mouse is in has a star
+        # get the sector where the mouse is
         x_sector = int(x // SECTOR_SIZE)
         y_sector = int(y // SECTOR_SIZE)
+
         try:
             current_star = self.universe[x_sector][y_sector]
         except IndexError:
-            return
+            print(f"{x_sector}x, {y_sector}y")
 
+        # check whether the current sector that the mouse is in has a star
         if current_star.star_exists:
-            self.starHovered = True
             self.hovered_star = current_star
-        else:
-            self.starHovered = False
-            self.hovered_star = None
 
     def on_mouse_press(self, x: float, y: float, button: int, modifiers: int):
         """Called when the mouse is pressed"""
-        if self.starHovered:
-            # generate the system, system remained ungenerated for memory efficiency
+        if self.hovered_star is not None:
+            # generate the system
             self.hovered_star.generate_system()
             # copy the state of the newly generated star system
-            self.selected_star = self.hovered_star
+            self.selected_star = deepcopy(self.hovered_star)
 
             # create ShapeElementList of all of the planets surrounding the star
             self.planet_list = arcade.ShapeElementList()
-            for i, p in enumerate(self.selected_star.planets):
-                planet = arcade.create_ellipse_filled(p.distance, SCREEN_HEIGHT / 4, p.diameter, p.diameter,
+            for p in self.selected_star.planets:
+                planet = arcade.create_ellipse_filled(p.distance,
+                                                      SCREEN_HEIGHT / 4,
+                                                      p.diameter,
+                                                      p.diameter,
                                                       p.color)
                 self.planet_list.append(planet)
         else:

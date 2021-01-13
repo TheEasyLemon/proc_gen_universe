@@ -1,5 +1,4 @@
 import math
-import random
 from planet_name_generator import generate_name
 from constants import SCREEN_HEIGHT, SCREEN_WIDTH
 
@@ -50,15 +49,10 @@ class StarSystem:
         self.star_color = (self.rnd_int(100, 255), self.rnd_int(100, 255), self.rnd_int(100, 255))
 
         # when looking at the galaxy map, we don't need full system
-        if not self.gen_full_system:
-            return
-
-        self.generate_system()
+        if self.gen_full_system:
+            self.generate_system()
 
     def generate_system(self):
-        # set gen_full_system to True
-        self.gen_full_system = True
-
         # generate planets
         num_planets = self.rnd_int(0, 8)
 
@@ -120,19 +114,3 @@ class StarSystem:
     def __repr__(self):
         # iterate through vars
         return "".join([f"{name}: {val}\n" for name, val in vars(self).items()])
-
-
-class Universe:
-    def __init__(self, sectors_x, sectors_y, sector_size):
-        self.sectors_x = sectors_x
-        self.sectors_y = sectors_y
-        self.sector_size = sector_size
-        self.starsystems = []
-
-        for i in range(sectors_x):
-            # appends by rows
-            temp = []
-            for j in range(sectors_y):
-                star = StarSystem(self.sector_size * i, self.sector_size * j)
-                temp.append(star)
-            self.starsystems.append(temp)
